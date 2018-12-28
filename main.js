@@ -97,13 +97,65 @@ function getRecordFromTxtFile(filePath){
     */
 }
 
-const filePath = "201805.TXT"
 
+function checkforInvalidRecords(
+    {
+        record: record,
+        teacherId: teacherId,
+        year: year,
+        month: month //month as string
+    }){
+        let dayContainer = new Array(31);
+        let invalidDays = new Array();
+
+
+        for(let i=0;i<record.length;i++){
+            //record[i][1] = teacherId , record[i][3] = month
+            if(record[i][1] === teacherId && record[i][3] === parseInt(month)){
+                //console.log(record[i]);
+                if(dayContainer[record[i][4]] === undefined){
+                    dayContainer[record[i][4]] = 1; 
+                } else {
+                    dayContainer[record[i][4]] += 1; 
+                }
+            }
+                    }
+        console.log('missing records on following days:')            
+        for(let i =0;i<dayContainer.length;i++){
+            if(dayContainer[i] !== undefined && dayContainer[i]% 2 !== 0){
+                console.log('day' + (i) + ": " + dayContainer[i] + 'record(s)');
+                invalidDays.push(i);
+            }
+        }
+        console.log('Please insert clock-time by the following format:');
+        console.log('addRecord(id,year,month,day,hour,minute)');
+        console.log('Example: addRecord(2,2018,5,18,07,31)');
+
+        for(let i =0;i<record.length;i++){
+            for(let j = 0;j<invalidDays.length;j++){
+                if(record[i][4] === invalidDays[j] && record[i][1] === teacherId && record[i][3] === parseInt(month)){
+                    console.log(record[i]);
+                }
+            }
+        }
+    };
+
+const year = '2018';
+const month = '05';
+const teacherId = 2;
+
+const filePath = year + month + '.TXT';
 //get plain records
 const record = getRecordFromTxtFile(filePath);
-console.log(record);
+checkforInvalidRecords(
+    {
+        record: record,
+        teacherId: teacherId,
+        year: year,
+        month: month
+    });
+//console.log(record);
 
-//checkforInvalidRecords(record);
 //addRecord();
 //deleteRecord();
 //display();

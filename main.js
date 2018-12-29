@@ -107,38 +107,60 @@ function checkforInvalidRecords(
     }){
         let dayContainer = new Array(31);
         let invalidDays = new Array();
-
-
+        
+        //count number of records into dayContainer
         for(let i=0;i<record.length;i++){
             //record[i][1] = teacherId , record[i][3] = month
-            if(record[i][1] === teacherId && record[i][3] === parseInt(month)){
-                //console.log(record[i]);
-                if(dayContainer[record[i][4]] === undefined){
-                    dayContainer[record[i][4]] = 1; 
-                } else {
-                    dayContainer[record[i][4]] += 1; 
+            if(record[i] !== undefined){
+                if(record[i][1] === teacherId && record[i][3] === parseInt(month)){
+                    //console.log(record[i]);
+                    if(dayContainer[record[i][4]] === undefined){
+                        dayContainer[record[i][4]] = 1; 
+                    } else {
+                        dayContainer[record[i][4]] += 1; 
+                    }
                 }
             }
-                    }
-        console.log('missing records on following days:')            
+        }
+        //display day of clock time that failed pairing.
         for(let i =0;i<dayContainer.length;i++){
             if(dayContainer[i] !== undefined && dayContainer[i]% 2 !== 0){
                 console.log('day' + (i) + ": " + dayContainer[i] + 'record(s)');
                 invalidDays.push(i);
             }
         }
-        console.log('Please insert clock-time by the following format:');
-        console.log('addRecord(id,year,month,day,hour,minute)');
-        console.log('Example: addRecord(2,2018,5,18,07,31)');
-
+        //console.log('Please insert clock-time by the following format:');
+        //console.log('addRecord(id,year,month,day,hour,minute)');
+        //console.log('Example: addRecord(2,2018,5,18,07,31)');
+        //display records of clock tims that can't be pair
         for(let i =0;i<record.length;i++){
             for(let j = 0;j<invalidDays.length;j++){
                 if(record[i][4] === invalidDays[j] && record[i][1] === teacherId && record[i][3] === parseInt(month)){
-                    console.log(record[i]);
+                    console.log('unpaired record: ' + record[i]);
                 }
             }
         }
+        
+        //display paired clock time that have 
     };
+function addRecord(record,
+    {
+        recordLog,teacherId,year,month,day,hour,minute
+    }){
+    record.push([recordLog,teacherId,year,month,day,hour,minute]);
+    let lastRecordIndex = (record.length) -1;
+    console.log('record added:' + record[lastRecordIndex]);
+};
+function deleteRecord(record, {
+    recordLog
+}){
+    for(let i = 0;i<record.length;i++){
+        if(record[i][0] === recordLog) {
+            console.log('deleted record:' + record[i])
+            delete record[i];
+        }
+    }
+};
 
 const year = '2018';
 const month = '05';
@@ -147,6 +169,44 @@ const teacherId = 2;
 const filePath = year + month + '.TXT';
 //get plain records
 const record = getRecordFromTxtFile(filePath);
+
+addRecord(record,{
+    recordLog: "_0001",
+    teacherId: 2,
+    year: 2018,
+    month: 5,
+    day: 18,
+    hour: 7,
+    minute: 30
+});
+
+addRecord(record,{
+    recordLog: "_0002",
+    teacherId: 2,
+    year: 2018,
+    month: 5,
+    day: 31,
+    hour: 12,
+    minute: 0
+});
+
+addRecord(record,{
+    recordLog: "_0003",
+    teacherId: 2,
+    year: 2018,
+    month: 5,
+    day: 31,
+    hour: 13,
+    minute: 0
+});
+
+deleteRecord(record, {
+    recordLog: '_0003'
+})
+
+
+//console.log(typeof record[2580]);
+
 checkforInvalidRecords(
     {
         record: record,
@@ -154,6 +214,8 @@ checkforInvalidRecords(
         year: year,
         month: month
     });
+
+
 //console.log(record);
 
 //addRecord();

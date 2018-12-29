@@ -177,7 +177,7 @@ function deleteRecord(recordObj, {
     }
 };
 
-function calculateSalary( {teacherId,year,month}, recordObj, dayContainer){
+function getWorkHour( {teacherId,year,month}, recordObj, dayContainer){
     month = parseInt(month);
     //dayRecord[2].push(record[3]);
     //j<dayContainer.length
@@ -207,7 +207,8 @@ function calculateSalary( {teacherId,year,month}, recordObj, dayContainer){
                         hourClockOut: tempRecord[m].hour,
                         minuteClockOut: tempRecord[m].minute,
                         hourUnitClockOut: tempRecord[m].hourUnit,
-
+                        
+                        day: tempRecord[m].day,
                         workHour:(tempRecord[m].hourUnit - tempRecord[m-1].hourUnit)
                     });
                 }
@@ -218,10 +219,38 @@ function calculateSalary( {teacherId,year,month}, recordObj, dayContainer){
 
 }
 
+function displaySalaryAndRecords(workHour,year,month,teacherId,teacherName,hourlyPay){
+
+    let totalHours = 0;
+    for(let i =0;i<workHour.length;i++){
+        if(workHour[i]){
+            for(let j=0;j<32;j++){
+                if(workHour[i].day === j ){
+                    console.log('Day: ' + workHour[i].day + ' Clock In: ' + workHour[i].hourClockIn + ':' + workHour[i].minuteClockIn + ' Clock Out: ' + workHour[i].hourClockOut + ':' + workHour[i].minuteClockOut + ' Working hours: ' +Math.round((workHour[i].workHour * 100))/100); // Math.round((workHour[i].workHour * 100))/100)
+                }
+            }
+            totalHours += workHour[i].workHour;
+
+        } else{
+            console.log('workHour[' + i + '] does not exists.');
+        }
+    }
+    Math.round((totalHours)*100)/100;
+    console.log('教師:' + teacherName + ' Id:' + teacherId)
+    console.log('薪資月份' + year + '/' + month);
+    console.log('時薪' + hourlyPay);
+    console.log('本月時數:' + totalHours + ' 小時');
+    console.log('本月薪資 $' + (totalHours * hourlyPay) + '元整');
+
+
+}
+
 console.time('Process Time');
 const year = '2018';
 const month = '05';
 const teacherId = 2;
+const teacherName = '瓊慧';
+const hourlyPay = 150;
 
 const filePath = year + month + '.TXT';
 //get plain records
@@ -268,11 +297,13 @@ const dayContainer = checkforInvalidRecords(recordObj,
         month: month
     });
 
-const workHour = calculateSalary({
+const workHour = getWorkHour({
     teacherId: 2,
     year: year,
     month: month
-    }, recordObj,dayContainer);
+}, recordObj,dayContainer);
+
+displaySalaryAndRecords(workHour,year,month,teacherId,teacherName,hourlyPay);
 
 
 console.timeEnd('Process Time');

@@ -179,53 +179,46 @@ function deleteRecord(recordObj, {
 
 function calculateSalary( {teacherId,year,month}, recordObj, dayContainer){
     month = parseInt(month);
-    let dayRecord = new Array(31);
     //dayRecord[2].push(record[3]);
+    //j<dayContainer.length
+    let workTime = [];
     for(let j=0;j<dayContainer.length;j++){
         if(dayContainer[j]) {
+            let tempRecord = [];
             for(let k=0;k<recordObj.length;k++){
                 if(recordObj[k]) {
                     if(recordObj[k].teacherId === teacherId && recordObj[k].month === month && recordObj[k].day === j){
-                        if(dayRecord[j] === undefined){
-                            dayRecord[j] = new Array(3);
-                            dayRecord[j][0] = recordObj[k].indexLog;
-                            dayRecord[j][1] = recordObj[k].hour;
-                            dayRecord[j][2] = recordObj[k].minute;
-                        } else {
-                            dayRecord[j].push(recordObj[k].indexLog);
-                            dayRecord[j].push(recordObj[k].hour);
-                            dayRecord[j].push(recordObj[k].minute);
-                        }
+                        tempRecord.push(recordObj[k]);
                     }
                 }
             }
-        }
-    }
-    for(let i =0;i<dayRecord.length;i++){
-        if(dayRecord[i]){
-            console.log('day: ' + i);
-            let recordCount = (dayRecord[i].length)/3;
-            console.log('day record(COUNT):' + recordCount);
-            
-            //sortTime
+            tempRecord = tempRecord.sort(function(a,b){
+                return a.hourUnit > b.hourUnit ? 1 : -1;
+            });
+            for(let m=0;m<tempRecord.length;m++){
+                if(m %2 === 1){
+                    workTime.push({
+                        indexLogClockIn: tempRecord[m-1].indexLog,
+                        hourClockIn: tempRecord[m-1].hour,
+                        minuteClockIn: tempRecord[m-1].minute,
+                        hourUnitClockIn: tempRecord[m-1].hourUnit,
 
-/*             for(let a =0;a<recordCount;a++){
-                let temp = new Array(3);
-                if(dayRecord[i][(a*3)+1] > dayRecord[i][((a+1)*3)+1]){
-                    console.log(dayRecord[i][(a*3)+1]);
-                    console.log(dayRecord[i][((a+1)*3)+1])
+                        indexLogClockOut: tempRecord[m].indexLog,
+                        hourClockOut: tempRecord[m].hour,
+                        minuteClockOut: tempRecord[m].minute,
+                        hourUnitClockOut: tempRecord[m].hourUnit,
 
+                        workHour:(tempRecord[m].hourUnit - tempRecord[m-1].hourUnit)
+                    });
                 }
-            } */
-
-            for(let j=0;j<recordCount;j++){
-                    console.log(dayRecord[i][(j*3)+1] + ':' + dayRecord[i][(j*3)+2]);
             }
         }
     }
+    return workTime;
+
 }
 
-console.time();
+console.time('Process Time');
 const year = '2018';
 const month = '05';
 const teacherId = 2;
@@ -275,15 +268,14 @@ const dayContainer = checkforInvalidRecords(recordObj,
         month: month
     });
 
-calculateSalary({
+const workHour = calculateSalary({
     teacherId: 2,
     year: year,
     month: month
     }, recordObj,dayContainer);
 
-console.timeEnd();
-console.log(recordObj.length);
-console.log(dayContainer[31]);
+
+console.timeEnd('Process Time');
 //console.log(recordObj[(recordObj.length-3)]);
 //console.log(recordObj[0]);
 

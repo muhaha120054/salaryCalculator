@@ -52,14 +52,14 @@ function getRecordFromTxtFile(filePath){
     
     //push validated elements into record.
     //record[]: indexId, teacherId, YYYY, MM, DD, hh, mm
-    let record = [];
+    let record = new Array();
     let index =0;
     for ( let i =0;i<(cleanSet.length/7);i++){
         for( let j =0;j< 7;j++)
         {
             if(j === 0){
                 record[i] = new Array(7);
-                record[i][j] = parseInt(cleanSet[index]);
+                record[i][j] = cleanSet[index];
                 index += 2;
             } else if ( j === 1) {
                 record[i][j] = parseInt(cleanSet[index]);
@@ -88,7 +88,22 @@ function getRecordFromTxtFile(filePath){
         }
     }
     //console.log(record);
-    return record;
+    const recordObj = [];
+    for(let i=0;i<record.length;i++){
+        recordObj.push({
+            indexLog: record[i][0],
+            teacherId: record[i][1],
+            year: record[i][2],
+            month: record[i][3],
+            day: record[i][4],
+            hour: record[i][5],
+            minute: record[i][6],
+            hourUnit: record[i][5] + (record[i][6]/60)
+        })
+
+    }
+
+    return recordObj;
     //test result
     /*
     for(let i =0;i<10;i++){
@@ -98,9 +113,8 @@ function getRecordFromTxtFile(filePath){
 }
 
 
-function checkforInvalidRecords(
+function checkforInvalidRecords(recordObj,
     {
-        record: record,
         teacherId: teacherId,
         year: year,
         month: month //month as string
@@ -109,15 +123,13 @@ function checkforInvalidRecords(
         let invalidDays = new Array();
         
         //count number of records into dayContainer
-        for(let i=0;i<record.length;i++){
-            //record[i][1] = teacherId , record[i][3] = month
-            if(record[i] !== undefined){
-                if(record[i][1] === teacherId && record[i][3] === parseInt(month)){
-                    //console.log(record[i]);
-                    if(dayContainer[record[i][4]] === undefined){
-                        dayContainer[record[i][4]] = 1; 
+        for(let i=0;i<recordObj.length;i++){
+            if(recordObj[i]){
+                if(recordObj[i].teacherId === teacherId && recordObj[i].month === parseInt(month)){
+                    if(dayContainer[recordObj[i].day] === undefined){
+                        dayContainer[recordObj[i].day] = 1; 
                     } else {
-                        dayContainer[record[i][4]] += 1; 
+                        dayContainer[recordObj[i].day] += 1; 
                     }
                 }
             }
@@ -133,34 +145,86 @@ function checkforInvalidRecords(
         //console.log('addRecord(id,year,month,day,hour,minute)');
         //console.log('Example: addRecord(2,2018,5,18,07,31)');
         //display records of clock tims that can't be pair
-        for(let i =0;i<record.length;i++){
+        for(let i =0;i<recordObj.length;i++){
             for(let j = 0;j<invalidDays.length;j++){
-                if(record[i][4] === invalidDays[j] && record[i][1] === teacherId && record[i][3] === parseInt(month)){
-                    console.log('unpaired record: ' + record[i]);
+                if(recordObj[i].day === invalidDays[j] && recordObj[i].teacherId === teacherId && recordObj[i].month === parseInt(month)){
+                    console.log('unpaired record: [indexLog]' + recordObj[i].indexLog + '[day]' + recordObj[i].day + '[Time]' + recordObj[i].hour + ':' + recordObj[i].minute ) ;
                 }
             }
         }
-        
-        //display paired clock time that have 
+        return dayContainer;
     };
-function addRecord(record,
+function addRecord(recordObj,
     {
-        recordLog,teacherId,year,month,day,hour,minute
+        indexLog,teacherId,year,month,day,hour,minute
     }){
-    record.push([recordLog,teacherId,year,month,day,hour,minute]);
-    let lastRecordIndex = (record.length) -1;
-    console.log('record added:' + record[lastRecordIndex]);
+    recordObj.push({indexLog,teacherId,year,month,day,hour,minute});
+    let lastRecordIndex = (recordObj.length) -1;
+    console.log('record added:' + recordObj[lastRecordIndex]);
 };
-function deleteRecord(record, {
-    recordLog
+function deleteRecord(recordObj, {
+    indexLog
 }){
-    for(let i = 0;i<record.length;i++){
-        if(record[i][0] === recordLog) {
-            console.log('deleted record:' + record[i])
-            delete record[i];
+    console.log('delete process being');
+    console.log(recordObj.length);
+    console.log(recordObj[2582].indexLog);
+
+    for(let i = 0;i<recordObj.length;i++){
+        if(recordObj[i].indexLog === indexLog) {
+            console.log('deleted record:' + recordObj[i])
+            delete recordObj[i];
         }
     }
 };
+
+function calculateSalary( {teacherId,year,month}, recordObj, dayContainer){
+    month = parseInt(month);
+    let dayRecord = new Array(31);
+    //dayRecord[2].push(record[3]);
+    for(let j=0;j<dayContainer.length;j++){
+        if(dayContainer[j]) {
+            for(let k=0;k<recordObj.length;k++){
+                if(recordObj[k]) {
+                    if(recordObj[k].teacherId === teacherId && recordObj[k].month === month && recordObj[k].day === j){
+                        if(dayRecord[j] === undefined){
+                            dayRecord[j] = new Array(3);
+                            dayRecord[j][0] = recordObj[k].indexLog;
+                            dayRecord[j][1] = recordObj[k].hour;
+                            dayRecord[j][2] = recordObj[k].minute;
+                        } else {
+                            dayRecord[j].push(recordObj[k].indexLog);
+                            dayRecord[j].push(recordObj[k].hour);
+                            dayRecord[j].push(recordObj[k].minute);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for(let i =0;i<dayRecord.length;i++){
+        if(dayRecord[i]){
+            console.log('day: ' + i);
+            let recordCount = (dayRecord[i].length)/3;
+            console.log('day record(COUNT):' + recordCount);
+            
+            //sortTime
+
+
+/*             for(let a =0;a<recordCount;a++){
+                let temp = new Array(3);
+                if(dayRecord[i][(a*3)+1] > dayRecord[i][((a+1)*3)+1]){
+                    console.log(dayRecord[i][(a*3)+1]);
+                    console.log(dayRecord[i][((a+1)*3)+1])
+
+                }
+            } */
+
+            for(let j=0;j<recordCount;j++){
+                console.log(dayRecord[i][(j*3)+1] + ':' + dayRecord[i][(j*3)+2]);
+            }
+        }
+    }
+}
 
 const year = '2018';
 const month = '05';
@@ -168,10 +232,10 @@ const teacherId = 2;
 
 const filePath = year + month + '.TXT';
 //get plain records
-const record = getRecordFromTxtFile(filePath);
+const recordObj = getRecordFromTxtFile(filePath);
 
-addRecord(record,{
-    recordLog: "_0001",
+addRecord(recordObj,{
+    indexLog: "_0001",
     teacherId: 2,
     year: 2018,
     month: 5,
@@ -180,8 +244,8 @@ addRecord(record,{
     minute: 30
 });
 
-addRecord(record,{
-    recordLog: "_0002",
+addRecord(recordObj,{
+    indexLog: "_0002",
     teacherId: 2,
     year: 2018,
     month: 5,
@@ -190,8 +254,8 @@ addRecord(record,{
     minute: 0
 });
 
-addRecord(record,{
-    recordLog: "_0003",
+addRecord(recordObj,{
+    indexLog: '_0003',
     teacherId: 2,
     year: 2018,
     month: 5,
@@ -200,20 +264,27 @@ addRecord(record,{
     minute: 0
 });
 
-deleteRecord(record, {
-    recordLog: '_0003'
+deleteRecord(recordObj, {
+    indexLog: '_0003'
 })
 
 
 //console.log(typeof record[2580]);
 
-checkforInvalidRecords(
+const dayContainer = checkforInvalidRecords(recordObj,
     {
-        record: record,
         teacherId: teacherId,
         year: year,
         month: month
     });
+
+calculateSalary({
+    teacherId: 2,
+    year: year,
+    month: month
+    }, recordObj,dayContainer);
+
+
 
 
 //console.log(record);
